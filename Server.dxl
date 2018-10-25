@@ -1,0 +1,227 @@
+﻿// Private function which distinguishes between current version and a baseline of a module
+bool isCurrentVersion(        // function return "true" for current version  -
+       string baselineStr     // string depicting baseline. Strings being null, empty or equal "*" are reserved for current version  -
+     )
+{
+  return null(baselineStr) || baselineStr == "" || baselineStr == "*"
+}
+
+int atoi ( string numberAsDecStr )
+{
+  int     result    = 0
+  Buffer  buff      = create()
+  bool    negative  = false
+  int     i         = 0
+  char    c         = '\0'
+  
+  if null(buff) then return 0
+
+  if ( !null( numberAsDecStr ) )
+  {
+    buff = numberAsDecStr;
+    i = firstNonSpace( buff );
+    if ( buff[i] == '-' ) 
+    {
+      negative = true
+      ++i
+    }
+    while ( i < length(buff) )
+    {
+      c = buff[i]
+      if ( !isdigit(c) ) then break
+      result *= 10
+      result += intOf(c) - intOf('0')
+      ++i
+    }
+  }
+  
+  delete( buff )
+  
+  return negative ? -1*result : result
+}
+
+bool parseBaseLineString( Baseline &baseLine, string testProcBaseLineStr )
+{
+  bool    syntaxOK = false
+  Regexp  regexp1 = regexp( "([^\\.]+)\\.([^\\.]+)$" ) 
+  Regexp  regexp2 = regexp( "([^\\.]+)\\.([^\\.]+)\\.(.+)$" )
+  
+  if ( !null(testProcBaseLineStr) )
+  {  
+    if ( regexp2 testProcBaseLineStr )
+    {
+      if ( isValidInt(testProcBaseLineStr[ match(1)]) && isValidInt(testProcBaseLineStr[ match(2)]) )
+      {
+        baseLine = baseline( atoi( testProcBaseLineStr[ match(1)]), atoi( testProcBaseLineStr[ match(2)]), testProcBaseLineStr[ match(3)] )
+        syntaxOK = true
+      }
+    } 
+    else
+    {
+      if ( regexp1 testProcBaseLineStr )
+      {
+        if ( isValidInt(testProcBaseLineStr[ match(1)]) && isValidInt(testProcBaseLineStr[ match(2)]) )
+        {
+          baseLine = baseline( atoi( testProcBaseLineStr[ match(1)]), atoi( testProcBaseLineStr[ match(2)]), null )
+          syntaxOK = true
+        }
+      } 
+    }
+  }    
+  return syntaxOK    
+}
+
+int openModule ( Module  &modl, string moduleName, string moduleBaseLine ) 
+{
+  Module cmodl = null
+  Baseline      baseLineStruct      = null
+  ModName_      modlRef             = null
+  
+  if ( null(moduleName) || null(moduleBaseLine) )
+  {
+    print "Undefined parameter when opening module \'" moduleName "\'!\n"
+    return -1 // a undefined mandatory parameter
+  }  
+
+  if ( !isCurrentVersion(moduleBaseLine)  &&
+       !parseBaseLineString( baseLineStruct, moduleBaseLine  )
+     )
+  {
+    print "Invalid definition of \'BaseLine\' parameter!\n"
+    return -2 // baseline string format is invalid
+  }
+
+  modlRef = module( moduleName )
+  
+  if ( null(modlRef) || !exists( modlRef ))
+  {
+    print "Module \'" moduleName "\' does not exist!\n"
+    return -3 // module does not exist
+  }
+    
+  cmodl = read( moduleName, true)
+  if ( null(cmodl) )
+  {
+    print "Module \'" moduleName "\' can't be opened!\n"
+    return -4 // module cannot be opened
+  }
+  
+  if ( !isCurrentVersion(moduleBaseLine) )
+  {
+    if ( !baselineExists( cmodl, baseLineStruct)) 
+    {
+      close( cmodl )
+      print "Baseline \'" moduleBaseLine "\' for module \'" moduleName "\' does not exist!\n"
+      return -5 // baseline is not defined for this module
+    }
+    modl = load( cmodl, baseLineStruct, true)
+    close (cmodl)
+    if ( null(modl))
+    {
+      print "Baseline \'" moduleBaseLine "\' for module \'" moduleName "\' can't be opened!\n"
+      return -5 // baseline cannot be opened for this module
+    }
+  } 
+  else
+  {
+      modl = cmodl
+  }
+  return 0 // OK 
+}
+
+void Export(string inpModuleName, string baseLineStr, string viewName, string outFileName)
+{
+  pragma runLim, 0
+  Module  inpModule               = null
+  Stream  Output                  = null
+
+  if ( null(inpModuleName) || null(baseLineStr) || null(outFileName) || null(viewName)) 
+  {
+    print "Invalid parameter!!\n"
+    return  
+  }
+  if ( openModule( inpModule, inpModuleName, baseLineStr ) != 0 ) then return
+
+  View inpView = view (item(fullName(inpModule)), viewName)
+  bool v = canRead(inpModule, inpView)
+  if (!v)
+  {
+     print "Unknown View!!\n"
+     close (inpModule)
+     return
+  }
+  load(inpModule, inpView)
+
+  Output = write( outFileName )
+  Object inpObject = null
+  Column c
+  Object t = null
+  int i = 0
+  string ttl, attr, data
+  Skip attrList = create()
+  Skip ttlList = create()
+  Skip tblList = create()
+  string style, id, requirement
+
+  for c in inpModule do
+  {
+    ttl = title c
+    attr = attrName c
+    if (main c && null attr) attr = "Object Text"
+    if (null attr) print "Unknown Attribute"
+    else
+    {
+      put(attrList,i,attr)
+      put(ttlList, i,ttl)
+    }
+    i = i + 1
+  }
+
+//Used to change NL to ";"
+  Regexp newline = regexp "([^\\n]+)\\n(.+)"
+// Used to remove any NL as last character
+  Regexp newline2 = regexp "([^\\n]+)\\n"
+// Used to remove any trailing tabs
+  Regexp newline3 = regexp "(.*)[;\\t]$"
+  string comma
+
+  for inpObject in inpModule do
+  {
+	comma = ""
+        for attr in attrList do
+        {
+          i = (int key attrList)
+          find(ttlList,i, ttl)
+          if (attr == "Object Identifier")
+          {
+            data = identifier(inpObject)
+          }
+          else
+          {
+            data = inpObject.attr
+            while (!null data && newline data)
+              data = data[0:end(1)] ";" data[start(2):length(data)]
+            while (!null data && newline2 data)
+              data = data[0:end(1)]
+            while (!null data && newline3 data)
+              data = data[start(1):end(1)]
+          }
+          if (attr != "Object ID" && attr != "FM Description" && attr != "Notes")
+
+            Output << comma data
+	    comma = ","
+	
+    	  }
+	  Output << "\n"
+  }
+  delete(tblList)
+  delete(attrList)
+  delete(ttlList)
+  close Output
+  close inpModule
+  return 0
+}
+
+
+evalTop_ "initDXLServer server 5093"
+
