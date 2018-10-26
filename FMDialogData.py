@@ -65,7 +65,9 @@ class FMDialogData:
                 page, function, option, fms, dependency, type, min, max = string.split(line,",")
                 self.data.append([page, function, option, fms, dependency, type, eval(min), eval(max)])
             except:
-                sys.exit("Unable to parse diaglog data file: %s",fm_config.file)
+                print sys.exc_info()
+                err_msg = "Unable to parse diaglog data file: " + fm_config.file
+                sys.exit(err_msg)
         return True
 
     def get(self, x, y):
