@@ -14,7 +14,6 @@ Turbo Prop,Torque Sensor,Available,torqueSensor,turboProp,Option,0,1
 Turbo Prop,Propeller Pitch Control,PPC RVDT Installation,ppcVDT,turboProp,Selection,1,1
 Turbo Fan,Synchrophasing,TurboFan Syncrophasing,fanSyncrophase,turboFan;dualEngine,Option,0,1
 Turbo Fan,Compressor Guide Vanes (CGV) LVDT,CGV LVDT,cgvLVDT,turboFan,Selection,1,1
-Turbo Fan,Engine Speed Analog Output,N1 Speed Analog Output,n1SpeedOutput,n/a,Option,0,1
 Air Cooled ECU,Oil Temperature Sensor,Installed,oilTempSensorAvail,airCooled,Selection,1,1
 Air Cooled ECU,Engine Discrete Electrical Interface,Shared Channel,engDisSharedElectInt,airCooled,Selection,1,1
 Air Cooled ECU,Muted Recovery Degraded Mode ,Has muted recovery for degraded mode,ccdlDegradeLatch,airCooled,Selection,1,1
@@ -71,6 +70,8 @@ Communications,Ethernet,Ethernet data streaming capability,gseEthernetDataStream
 Communications,Ethernet,Ethernet data dump capability,gseEthernetDataDump,gseEthernet,Selection,1,2
 Communications,GSE Interface Upload Request,Upload Request open/closed discrete,closedContactUploadRequest,airCooled,Selection,0,1
 Communications,GSE Interface Upload Request,Upload Request open/ground discrete,groundedContactUploadRequest,fuelCooled,Selection,0,1
+Communications,Software Upload Interlock Capability,Multiple SW Upload Accesses Allowed,gseSWInterlockMultiPW,airCooled,Selection,1,1
+Communications,Software Upload Interlock Capability,Single SW Upload Access Allowed,gseSWInterlockSnglPW,fuelCooled,Selection,1,1
 Communications,Avionics Data Bus,ARINC-429,Arinc,n/a,Selection,1,1
 Communications,Avionics Data Bus,MIL-STD-1553,Mil1553,n/a,Selection,1,1
 Communications,Avionics Data Bus PH,ARINC-429,Arinc429,Arinc,Selection,1,1
@@ -337,7 +338,8 @@ Engine Speed,Secondary N2,No Secondary N2,n2SingleSource,n/a,Selection,1,1
 Engine Speed,N1 Common Functionality,Has N1 shaft,n1Common,n/a,Selection,0,1
 Engine Speed,N1,Single Source N1,n1SingleSource,n1Common,Selection,1,1
 Engine Speed,N1,Secondary Source N1,n1SecondarySource,n/a,Selection,1,1
-Engine Speed,Engine Speed Analog Output,N2 Speed Analog Output,n2SpeedOutput,n/a,Option,0,1
+Engine Speed,Engine Speed Analog Output,N2 Speed Analog Output,n2SpeedOutput,n/a,Option,0,2
+Engine Speed,Engine Speed Analog Output,N1 Speed Analog Output,n1SpeedOutput,n/a,Option,0,2
 Engine Speed,Dual Engine N1 Sync,N1 Sync,n1Sync,xEngDataLink;sfrCFR,Option,0,1
 Engine Speed,Dual Engine N2 Sync,N2 Sync,n2Sync,xEngDataLink;sfrCFR,Option,0,1
 Engine Speed,Lower Right Hand Corner Derate,Lower Right Hand Corner Derate,superSonicBarnstormingProtection,fuelCooled,Selection,1,1
@@ -414,7 +416,7 @@ Monitoring,Static Pressure,Aircraft Weighted Signal Selection,psWeightedSel,airC
 Monitoring,TT2 Signal Selection,Aircraft Voted Signal Selection,tt2AircraftVotedSel,fuelCooled,Selection,1,1
 Monitoring,TT2 Signal Selection,Aircraft Weighted Signal Selection,tt2WeightedSel,airCooled,Selection,1,1
 Monitoring,TT2 Heater,TT2 Heater,tt2Heater,n/a,Option,0,1
-Monitoring,Resistive Temperature Device (RTD) Difference Check,TT2 OilTemp and FuelTemp Difference Check,rtdDiffResetStopCheck,airCooled,Selection,1,1
+Monitoring,Resistive Temperature Device (RTD) Difference Check,TT2 and Oil Temp and Fuel Temp Difference Check,rtdDiffResetStopCheck,airCooled,Selection,1,1
 Monitoring,Airflow Calculation,Corrected Airflow Calculation,airflowCalcCorrected,tt2Heater,Selection,1,1
 Monitoring,EGT Derivative,Deadzone filtered derivative,t5DotDeadzoneFilter,n/a,Selection,1,1
 Monitoring,HGI Ramp Bias to Aircraft Voted TT2,HGI Ramp Bias to Aircraft Voted TT2,HGIRampTT2AircraftVotedSel,HGIOperation;tt2AircraftVotedSel;upDownRampFunction,Selection,1,1
